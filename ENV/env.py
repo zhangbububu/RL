@@ -3,9 +3,62 @@ import numpy as np
 import torch
 from sklearn.preprocessing import StandardScaler,MinMaxScaler
 class Crowdsourcing:
+    
 
     def __init__(self,):
         '''
+
+        worker
+
+            state : 0000 (有没有被推荐任务)
+
+            reward:  
+                    [任务是不是第一次被拿] * [project的奖金]  *  [woker的兴趣 与 proj的相关性] 
+
+            action: 第proj——id个proj 分给  第work-id个worker
+
+        proj
+            state: 0000 (是不是第一次推荐给别人). proj的状态, 0/1。 worker只能被分配一个proj，但是一个proj能分给多个worker
+                    因此，我们设定proj的奖金只给第一个被分配的worker。
+
+            reward:
+                    [woker的兴趣 与 proj的相关性] * worker_quality
+
+            action: 第proj——id个proj 分给  第work-id个worker
+
+        策略 pi：
+            pi(0000,000) -----》 (proj to worker)[action]
+        例如：
+            pi(0000,000) -----》 (proj0 -> woker1) [action]
+            如何两者的状态，输出action
+
+        Q函数：
+            Q((p_state, w_state), action) = reward
+
+        流程：
+            s*:状态
+            a*：action
+            r*: reward
+
+            # (0000,000) s0
+            # (0100,100) s1 a1 r1
+            # (0110,110) s2 a2 r2
+            # (0111,111) s3 a3 r3
+            # (1111,111) s4 a4 r4
+            # END
+
+            得到：（s1,a1,r1,s2,a2,r2,s3,a3,r3............)
+
+
+        Data
+            worker的特征：
+                 兴趣, qualit   
+            proj的特征:
+                 domain(与worker中兴趣的意义相同), award. 
+            具体看 project-info.csv and  worker.info.csv
+
+        --------------------------------------------------------------------------
+
         交互环境
             step() 
             reset()

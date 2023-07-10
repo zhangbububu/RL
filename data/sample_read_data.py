@@ -148,8 +148,6 @@ worker
             [任务是不是第一次被拿] * [project的奖金]  *  [woker的兴趣 与 proj的相关性] 
     action....
 
-
-
 proj
     state: 0000 (是不是第一次推荐给别人)
     reward:

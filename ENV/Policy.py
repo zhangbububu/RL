@@ -3,7 +3,7 @@ import torch
 import tqdm
 
 
-
+from torch.utils.tensorboard import SummaryWriter
 from env import Crowdsourcing
 
 class PolicyNet(torch.nn.Module):
@@ -122,7 +122,8 @@ proj_state_dim = env.proj_num
 agent = REINFORCE(worker_f_dim, proj_f_dim, worker_state_dim, proj_state_dim,
                   env.worker_info, env.proj_info,hidden_dim,gamma)
 
-
+log_dir = './summary_log'
+summary_writer = SummaryWriter(log_dir)
 return_list = []
 
 
@@ -152,9 +153,8 @@ for i in tqdm.tqdm(range(epochs)):
         episode_return += reward
 
     return_list.append(episode_return)
+      
+    summary_writer.add_scalar('Train/return', episode_return, i)
+
     agent.update(transition_dict)
     print(episode_return)
-
-for i in return_list:
-    print(i)
-
