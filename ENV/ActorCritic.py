@@ -13,8 +13,8 @@ class ActorCritic:
                  epoch:int = 1000,
                  device:str = "cpu"
                  ):
-        self.actor = actor
-        self.critic = critic
+        self.actor = actor.to(device)
+        self.critic = critic.to(device)
         self.opt_actor = Adam(self.actor.parameters(), lr=0.001, weight_decay=0.003)
         self.opt_critic = Adam(self.critic.parameters(), lr=0.001, weight_decay=0.003)
         self.agent = agent
@@ -34,7 +34,7 @@ class ActorCritic:
                 nxt_state_worker, nxt_state_proj, reward, done,_ = self.env.step(action)
                 prob = self.actor(state_worker, state_proj, self.agent.worker_feature, self.agent.proj_feature)
                 prob = prob.reshape(-1)
-                state = torch.cat([state_worker,state_proj])
+                state = torch.cat([state_worker,state_proj]).to(self.device)
                 q_val = self.critic(state)
                 log_prob = torch.sum(torch.log(prob))
                 loss_actor = -log_prob * q_val
