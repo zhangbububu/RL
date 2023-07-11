@@ -77,7 +77,7 @@ class Crowdsourcing:
             proj的初始状态
         '''
 
-        data_worker = pd.read_csv('/public_data/zba/RL/worker_info.csv')
+        data_worker = pd.read_csv('../worker_info.csv')
         data_worker = data_worker.values[:,2:]
         index = np.random.randint(0,len(data_worker)-self.worker_num)
         self.worker_info = data_worker[index:index+self.worker_num] # worker的特征,具体查看woker-info文件，shape为（worker_num, 2）
@@ -86,7 +86,7 @@ class Crowdsourcing:
 
         self.worker_info = torch.tensor(self.worker_info, dtype=torch.float32) 
         self.worker_info[:,0] /= 10
-        data_proj = pd.read_csv('/public_data/zba/RL/projects_info.csv')
+        data_proj = pd.read_csv('../projects_info.csv')
         data_proj = data_proj.values[:,2:]
         index = np.random.randint(0,len(data_proj)-self.proj_num)
         self.proj_info = data_proj[index:index+self.proj_num] #proj的特征,具体看proj—info文件, shape为（worker_num, 2）
@@ -171,5 +171,7 @@ class Crowdsourcing:
 
 
 
-env = Crowdsourcing()
-env.reset()
+if __name__ == '__main__':
+    env = Crowdsourcing()
+    env.reset()
+    print(env)
