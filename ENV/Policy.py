@@ -108,55 +108,55 @@ class REINFORCE:
 
 
 
+if __name__ == '__main__':
+    learning_rate = 0.001
+    hidden_dim = 16
+    gamma = 0.98
 
-learning_rate = 0.001
-hidden_dim = 16
-gamma = 0.98
+    env = Crowdsourcing()
+    env.reset()
+    worker_f_dim=env.worker_info.shape[1]
+    proj_f_dim=env.proj_info.shape[1]
+    worker_state_dim=env.worker_num
+    proj_state_dim = env.proj_num
 
-env = Crowdsourcing()
-env.reset()
-worker_f_dim=env.worker_info.shape[1]
-proj_f_dim=env.proj_info.shape[1]
-worker_state_dim=env.worker_num
-proj_state_dim = env.proj_num
+    agent = REINFORCE(worker_f_dim, proj_f_dim, worker_state_dim, proj_state_dim,
+                    env.worker_info, env.proj_info,hidden_dim,gamma)
 
-agent = REINFORCE(worker_f_dim, proj_f_dim, worker_state_dim, proj_state_dim,
-                  env.worker_info, env.proj_info,hidden_dim,gamma)
-
-log_dir = './summary_log'
-log_dir = os.path.join(log_dir, time.strftime('%y%m%d%H%M%S_', time.localtime(time.time())))
-summary_writer = SummaryWriter(log_dir)
-return_list = []
+    log_dir = './summary_log'
+    log_dir = os.path.join(log_dir, time.strftime('Policy_%y%m%d%H%M%S', time.localtime(time.time())))
+    summary_writer = SummaryWriter(log_dir)
+    return_list = []
 
 
-epochs = 1000
-for i in tqdm.tqdm(range(epochs)):
-    episode_return = 0
-    transition_dict = {
-        'states': [],
-        'actions': [],
-        'next_states': [],
-        'rewards': [],
-        'dones': []
-    }
-    state_worker, state_proj = env.reset()
-    done = False
-    while not done:
-        action = agent.take_action(state_worker, state_proj)
-        next_state_worker, next_state_proj , reward, done, _ = env.step(action)
-        transition_dict['states'].append((state_worker, state_proj))
-        transition_dict['actions'].append(action)
-        transition_dict['next_states'].append((next_state_worker, next_state_proj))
-        transition_dict['rewards'].append(reward)
-        transition_dict['dones'].append(done)
-        # print(done)
-        state_worker = next_state_worker
-        state_proj = next_state_proj
-        episode_return += reward
+    epochs = 1000
+    for i in tqdm.tqdm(range(epochs)):
+        episode_return = 0
+        transition_dict = {
+            'states': [],
+            'actions': [],
+            'next_states': [],
+            'rewards': [],
+            'dones': []
+        }
+        state_worker, state_proj = env.reset()
+        done = False
+        while not done:
+            action = agent.take_action(state_worker, state_proj)
+            next_state_worker, next_state_proj , reward, done, _ = env.step(action)
+            transition_dict['states'].append((state_worker, state_proj))
+            transition_dict['actions'].append(action)
+            transition_dict['next_states'].append((next_state_worker, next_state_proj))
+            transition_dict['rewards'].append(reward)
+            transition_dict['dones'].append(done)
+            # print(done)
+            state_worker = next_state_worker
+            state_proj = next_state_proj
+            episode_return += reward
 
-    return_list.append(episode_return)
-      
-    summary_writer.add_scalar('Train/return', episode_return, i)
+        return_list.append(episode_return)
+        
+        summary_writer.add_scalar('Train/return', episode_return, i)
 
-    agent.update(transition_dict)
-    print(episode_return)
+        agent.update(transition_dict)
+        print(episode_return)

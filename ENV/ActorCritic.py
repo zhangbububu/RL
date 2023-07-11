@@ -1,3 +1,5 @@
+import os
+import time
 from torch import nn
 import torch
 from Policy import PolicyNet
@@ -5,6 +7,12 @@ from torch.optim import Adam
 from Policy import REINFORCE
 from env import Crowdsourcing
 from DQN import QNetwork
+
+from torch.utils.tensorboard import SummaryWriter
+log_dir = './summary_log'
+log_dir = os.path.join(log_dir, time.strftime('Actor_%y%m%d%H%M%S', time.localtime(time.time())))
+summary_writer = SummaryWriter(log_dir)
+
 class ActorCritic:
     def __init__(self, actor: nn.Module,
                  critic: nn.Module,
@@ -49,6 +57,7 @@ class ActorCritic:
                 self.opt_critic.step()
                 episode_return += reward
                 if done:break
+            summary_writer.add_scalar('Train/return', episode_return, e)
             print(f'Episode {e} return {episode_return}')
 
 if __name__ == '__main__':
@@ -60,7 +69,7 @@ if __name__ == '__main__':
     actor = PolicyNet(worker_f_dim, proj_f_dim, hidden_dim=16)
     critic = QNetwork(pro_num + worker_num, 1000, 1)
     agent = REINFORCE(actor, critic)
-    trainer = ActorCritic(actor, critic, agent, env,device="mps")
+    trainer = ActorCritic(actor, critic, agent, env,device="cuda")
     trainer.train()
 
 

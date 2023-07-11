@@ -22,7 +22,7 @@ class Trainer:
     def __init__(self, Q_network: QNetwork,
                  env: Crowdsourcing,
                  epochs: int = 1000,
-                 device: str = 'mps'):
+                 device: str = 'cuda'):
         self.q = Q_network.to(device)
         self.env = env
         self.state_worker, self.state_proj = self.env.reset()
@@ -49,6 +49,8 @@ class Trainer:
             while True:
                 q_val = self.q(self.state)
                 indices = torch.argmax(q_val)
+                # print(q_val.shape)
+                # print(f'{indices=}')
                 nxt_state_worker,nxt_state_proj,reward,f,_ = self.env.step(indices)
                 nxt_state = torch.cat([nxt_state_worker, nxt_state_proj]).to(self.device)
                 q_val_nxt = self.q(nxt_state)
@@ -59,6 +61,7 @@ class Trainer:
                 self.opt.step()
                 self.state = nxt_state
                 episode_return += reward
+                # print(f)
                 if f:break
             print(f'Episode {e} return {episode_return}')
 
