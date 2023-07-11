@@ -1,4 +1,6 @@
 from ast import List
+import os
+import time
 import torch
 import tqdm
 
@@ -11,15 +13,15 @@ class PolicyNet(torch.nn.Module):
         super(PolicyNet, self).__init__()
 
         self.fc1 = torch.nn.Sequential(
-            torch.nn.Linear(worker_f_dim+1, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, hidden_dim),
+            torch.nn.Linear(worker_f_dim, hidden_dim),
+            # torch.nn.ReLU(),
+            # torch.nn.Linear(hidden_dim, hidden_dim),
 
         )
         self.fc2 = torch.nn.Sequential(
             torch.nn.Linear(proj_f_dim+1, hidden_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_dim, hidden_dim),
+            # torch.nn.ReLU(),
+            # torch.nn.Linear(hidden_dim, hidden_dim),
         )
 
     def forward(self,  worker_state, proj_state,  worker_f, proj_f):
@@ -30,7 +32,7 @@ class PolicyNet(torch.nn.Module):
         # proj_state: 00110101 (proj_num, )
         # proj_feature:    (proj_num, feature_dim)
 
-        worker_f = torch.concat([worker_f, worker_state.reshape(-1,1)],dim=-1) 
+        # worker_f = torch.concat([worker_f, worker_state.reshape(-1,1)],dim=-1) 
         proj_f = torch.concat([proj_f, proj_state.reshape(-1,1)],dim=-1) 
         worker_f = worker_f.cuda()
         proj_f = proj_f.cuda()
@@ -87,7 +89,7 @@ class REINFORCE:
         action_list = transition_dict['actions']
 
         G = 0
-        self.optimizer.zero_grad()
+        
         for i in reversed(range(len(reward_list))):  # 从最后一步算起
             reward = reward_list[i]
             state_worker, state_proj = state_list[i]
@@ -98,7 +100,6 @@ class REINFORCE:
             prob = prob.reshape(-1)
             t = prob[action]
             log_prob = torch.log(t)
-
             G = self.gamma * G + reward
             loss = -log_prob * G  # 每一步的损失函数
             loss.backward()  # 反向传播计算梯度
@@ -108,9 +109,9 @@ class REINFORCE:
 
 
 
-learning_rate = 0.002
+learning_rate = 0.001
 hidden_dim = 16
-gamma = 0.8
+gamma = 0.98
 
 env = Crowdsourcing()
 env.reset()
@@ -123,6 +124,7 @@ agent = REINFORCE(worker_f_dim, proj_f_dim, worker_state_dim, proj_state_dim,
                   env.worker_info, env.proj_info,hidden_dim,gamma)
 
 log_dir = './summary_log'
+log_dir = os.path.join(log_dir, time.strftime('%y%m%d%H%M%S_', time.localtime(time.time())))
 summary_writer = SummaryWriter(log_dir)
 return_list = []
 

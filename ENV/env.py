@@ -64,8 +64,8 @@ class Crowdsourcing:
             reset()
         '''
         super(Crowdsourcing, self,).__init__()
-        self.worker_num = 500
-        self.proj_num = 500
+        self.worker_num = 100
+        self.proj_num = 100
         self.reset() 
 
     def reset(self,):
